@@ -1,0 +1,65 @@
+name: Semantic Version Release
+description: Detects semantic version from tag. Updates major and minor tags accordingly. Makes a GitHub release.
+
+branding:
+  color: gray-dark
+  icon: tag
+
+inputs:
+  repo-token:
+    description: GitHub Action token.
+    required: true
+    default: ${{ github.token }}
+  version:
+    description: Semantic Version of the release
+    required: true
+  prefix:
+    description: Human friendly release prefix. Shown on GitHub releases.
+    required: false
+    default: ""
+  files:
+    description: Files to upload as part of the release assets. Separated by new lines.
+    required: false
+  prerelease:
+    description: Whether to set the release as prerelease on GitHub
+    required: false
+    default: 'false'
+
+outputs:
+  release-url:
+    description: Release url
+    value: ${{ steps.github-release.outputs.upload_url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Align major and minor tags
+      uses: actions/github-script@v3
+      env:
+        GITHUB_SHA: ${{ inputs.repo-token }}
+      with:
+        script: |
+          const regex = /^(?:v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+          const version = '${{ inputs.version }}'
+          if (!regex.test(version)) {
+            process.exit(1)
+          }
+          const match = version.match(regex)
+          const version = match[0]
+          const major = match[1]
+          const minor = match[2]
+          const major_tag = 'tags/v' + major
+          const minor_tag = 'tags/v' + major + '.' + minor
+          const latest_tag = 'tags/latest'
+          for (const tag of [major_tag, minor_tag, latest_tag]) {
+            await github.git.deleteRef({ ...context.repo, ref: tag }).catch(() => {})
+            await github.git.createRef({ ...context.repo, ref: `refs/${tag}` , sha: process.env.GITHUB_SHA })
+          }
+    - name: Create GitHub Release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: ${{ inputs.repo-token }}
+        draft: false
+        prerelease: ${{ inputs.prerelease }}
+        title: ${{ inputs.prefix }} ${{ inputs.version }}
+        files: ${{ inputs.files }}
