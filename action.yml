@@ -45,7 +45,6 @@ runs:
             process.exit(1)
           }
           const match = version.match(regex)
-          const version = match[0]
           const major = match[1]
           const minor = match[2]
           const major_tag = 'tags/v' + major
