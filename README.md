@@ -11,10 +11,10 @@ In order to avoid this, you **must handle conditional execution of this action d
 ### Usage example
 ```yaml
     steps:
-      - uses: ldeluigi/action-semver-release@v0
+      - uses: EasyDesk/action-semver-release@v1
         with:
           prefix: Semantic Version Release Action
-          version: ${{ steps.compute-version.outputs.computed-version }}
+          version: v1.0.0
           prerelease: false
           files: |
             LICENSE
