@@ -15,9 +15,9 @@ jobs:
         name: Checkout
         uses: EasyDesk/action-semver-checkout@master
       - name: Release
-        if: ${{ steps.compute-version.outputs.should-release == 'true' }}
+        if: ${{ steps.semver-checkout.outputs.should-release == 'true' }}
         uses: ./
         with:
-          version: ${{ steps.compute-version.outputs.version }}
-          prerelease: ${{ steps.compute-version.outputs.is-github-prerelease }}
+          version: ${{ steps.semver-checkout.outputs.version }}
+          prerelease: ${{ steps.semver-checkout.outputs.is-github-prerelease }}
           
