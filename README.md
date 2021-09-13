@@ -1,4 +1,4 @@
-# action-sem-ver-release
+# action-semver-release
 
 This action automates the processes of updating major version and minor version tags when a release is triggered.  
 Then, it automates the process of creating GitHub releases.
@@ -11,7 +11,7 @@ In order to avoid this, you **must handle conditional execution of this action d
 ### Usage example
 ```yaml
     steps:
-      - uses: ldeluigi/action-sem-ver-release@v0
+      - uses: ldeluigi/action-semver-release@v0
         with:
           prefix: Semantic Version Release Action
           version: ${{ steps.compute-version.outputs.computed-version }}
