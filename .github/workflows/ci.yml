@@ -13,7 +13,7 @@ jobs:
     steps:
       - id: semver-checkout
         name: Checkout
-        uses: EasyDesk/action-semver-checkout@master
+        uses: EasyDesk/action-semver-checkout@v1
       - name: Release
         if: ${{ steps.semver-checkout.outputs.should-release == 'true' }}
         uses: ./
