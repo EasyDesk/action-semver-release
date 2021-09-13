@@ -11,7 +11,7 @@ inputs:
     required: true
     default: ${{ github.token }}
   version:
-    description: Semantic Version of the release
+    description: Semantic Version of the release.
     required: true
   prefix:
     description: Human friendly release prefix. Shown on GitHub releases.
@@ -21,9 +21,9 @@ inputs:
     description: Files to upload as part of the release assets. Separated by new lines.
     required: false
   prerelease:
-    description: Whether to set the release as prerelease on GitHub
+    description: Whether to set the release as prerelease on GitHub.
     required: false
-    default: 'false'
+    default: "false"
 
 outputs:
   release-url:
