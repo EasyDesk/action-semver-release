@@ -37,10 +37,11 @@ runs:
       uses: actions/github-script@v3
       env:
         GITHUB_SHA: ${{ inputs.repo-token }}
+        VERSION: ${{ inputs.version }}
       with:
         script: |
           const regex = /^(?:v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
-          const version = '${{ inputs.version }}'
+          const version = process.env.VERSION
           if (!regex.test(version)) {
             process.exit(1)
           }
