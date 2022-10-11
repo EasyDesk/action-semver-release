@@ -34,7 +34,7 @@ runs:
   using: composite
   steps:
     - name: Align major and minor tags
-      uses: actions/github-script@v3
+      uses: actions/github-script@v6
       env:
         GITHUB_SHA: ${{ inputs.repo-token }}
         VERSION: ${{ inputs.version }}
@@ -52,8 +52,8 @@ runs:
           const minor_tag = 'tags/v' + major + '.' + minor
           const latest_tag = 'tags/latest'
           for (const tag of [major_tag, minor_tag, latest_tag]) {
-            await github.git.deleteRef({ ...context.repo, ref: tag }).catch(() => {})
-            await github.git.createRef({ ...context.repo, ref: `refs/${tag}` , sha: process.env.GITHUB_SHA })
+            await github.rest.git.deleteRef({ ...context.repo, ref: tag }).catch(() => {})
+            await github.rest.git.createRef({ ...context.repo, ref: `refs/${tag}` , sha: process.env.GITHUB_SHA })
           }
     - name: Create GitHub Release
       uses: marvinpinto/action-automatic-releases@latest
