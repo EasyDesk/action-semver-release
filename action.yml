@@ -16,19 +16,19 @@ inputs:
   prefix:
     description: Human friendly release prefix. Shown on GitHub releases.
     required: false
-    default: ""
+    default: ''
   files:
     description: Files to upload as part of the release assets. Separated by new lines.
     required: false
   prerelease:
     description: Whether to set the release as prerelease on GitHub.
     required: false
-    default: "false"
+    default: 'false'
 
 outputs:
   release-url:
     description: Release url
-    value: ${{ steps.github-release.outputs.upload_url }}
+    value: ${{ steps.github-release.outputs.url }}
 
 runs:
   using: composite
@@ -56,10 +56,11 @@ runs:
             await github.rest.git.createRef({ ...context.repo, ref: `refs/${tag}` , sha: process.env.GITHUB_SHA })
           }
     - name: Create GitHub Release
-      uses: marvinpinto/action-automatic-releases@latest
+      uses: softprops/action-gh-release@v1
       with:
-        repo_token: ${{ inputs.repo-token }}
         draft: false
         prerelease: ${{ inputs.prerelease }}
-        title: ${{ inputs.prefix }} ${{ inputs.version }}
         files: ${{ inputs.files }}
+        name: ${{ inputs.prefix }} ${{ inputs.version }}
+        token: ${{ inputs.repo-token }}
+        generate_release_notes: true
