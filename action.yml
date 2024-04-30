@@ -34,7 +34,7 @@ runs:
   using: composite
   steps:
     - name: Align major and minor tags
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       env:
         GITHUB_SHA: ${{ inputs.repo-token }}
         VERSION: ${{ inputs.version }}
