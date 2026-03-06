@@ -39,6 +39,7 @@ runs:
         GITHUB_SHA: ${{ inputs.repo-token }}
         VERSION: ${{ inputs.version }}
       with:
+        retries: 3
         script: |
           const regex = /^(?:v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
           const version = process.env.VERSION
@@ -52,7 +53,14 @@ runs:
           const minor_tag = 'tags/v' + major + '.' + minor
           const latest_tag = 'tags/latest'
           for (const tag of [major_tag, minor_tag, latest_tag]) {
-            await github.rest.git.deleteRef({ ...context.repo, ref: tag }).catch(() => {})
+            try {
+              await github.rest.git.deleteRef({ ...context.repo, ref: tag })
+            } catch (e) {
+              if (e.status !== 404) {
+                throw e
+              }
+            }
+
             await github.rest.git.createRef({ ...context.repo, ref: `refs/${tag}` , sha: process.env.GITHUB_SHA })
           }
     - name: Create GitHub Release
