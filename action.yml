@@ -75,7 +75,9 @@ runs:
         set -euo pipefail
         shopt -s nullglob
 
-        args=(--generate-notes --title "${PREFIX:+$PREFIX }$VERSION")
+        # --repo is required: consumers need not have checked the repo out,
+        # and without it gh infers the target from git remotes.
+        args=(--repo "$GITHUB_REPOSITORY" --generate-notes --title "${PREFIX:+$PREFIX }$VERSION")
         if [[ "$PRERELEASE" == "true" ]]; then
           args+=(--prerelease)
         fi
@@ -96,7 +98,7 @@ runs:
             echo "url=$url" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if url="$(gh release view "$GITHUB_REF_NAME" --json url -q .url 2>/dev/null)"; then
+          if url="$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json url -q .url 2>/dev/null)"; then
             echo "Release for $GITHUB_REF_NAME exists; attempt $attempt got through."
             echo "url=$url" >> "$GITHUB_OUTPUT"
             exit 0
