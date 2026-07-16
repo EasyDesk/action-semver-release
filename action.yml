@@ -36,7 +36,6 @@ runs:
     - name: Align major and minor tags
       uses: actions/github-script@v9
       env:
-        GITHUB_SHA: ${{ inputs.repo-token }}
         VERSION: ${{ inputs.version }}
       with:
         retries: 3
@@ -64,11 +63,46 @@ runs:
             await github.rest.git.createRef({ ...context.repo, ref: `refs/${tag}` , sha: process.env.GITHUB_SHA })
           }
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v3
-      with:
-        draft: false
-        prerelease: ${{ inputs.prerelease }}
-        files: ${{ inputs.files }}
-        name: ${{ inputs.prefix }} ${{ inputs.version }}
-        token: ${{ inputs.repo-token }}
-        generate_release_notes: true
+      id: github-release
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.repo-token }}
+        VERSION: ${{ inputs.version }}
+        PREFIX: ${{ inputs.prefix }}
+        FILES: ${{ inputs.files }}
+        PRERELEASE: ${{ inputs.prerelease }}
+      run: |
+        set -euo pipefail
+        shopt -s nullglob
+
+        args=(--generate-notes --title "${PREFIX:+$PREFIX }$VERSION")
+        if [[ "$PRERELEASE" == "true" ]]; then
+          args+=(--prerelease)
+        fi
+        while IFS= read -r pattern; do
+          [[ -n "$pattern" ]] || continue
+          matches=($pattern)
+          if [[ ${#matches[@]} -eq 0 ]]; then
+            echo "::error::No files matched: $pattern"
+            exit 1
+          fi
+          args+=("${matches[@]}")
+        done <<< "$FILES"
+
+        # The releases API intermittently answers 5xx, so retry rather than
+        # failing the whole release on a blip.
+        for attempt in 1 2 3; do
+          if url="$(gh release create "$GITHUB_REF_NAME" "${args[@]}")"; then
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if url="$(gh release view "$GITHUB_REF_NAME" --json url -q .url 2>/dev/null)"; then
+            echo "Release for $GITHUB_REF_NAME exists; attempt $attempt got through."
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "::warning::gh release create failed (attempt $attempt of 3)"
+          sleep $((attempt * 10))
+        done
+        echo "::error::Could not create release for $GITHUB_REF_NAME after 3 attempts"
+        exit 1

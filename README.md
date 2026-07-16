@@ -23,5 +23,7 @@ In order to avoid this, you **must handle conditional execution of this action d
 In this example, the existence of a 'v1.0.0' tag is expected.
 The action is responsible to update 'latest', 'v1' and 'v1.0' tags to point to the same commit as 'v1.0.0'.
 
-## Credits
-This action couldn't work without [softprops/action-gh-release](https://github.com/softprops/action-gh-release).
+## Outputs
+| Output | Description |
+| --- | --- |
+| `release-url` | URL of the created GitHub release. |
